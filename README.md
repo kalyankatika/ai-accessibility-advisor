@@ -22,8 +22,8 @@ An enterprise-grade web accessibility testing platform that uses AI to evaluate 
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/ai-accessibility-tester.git
-cd ai-accessibility-tester
+git clone https://github.com/kalyankatika/ai-accessibility-advisor.git
+cd ai-accessibility-advisor
 ```
 
 2. Install Python dependencies:
