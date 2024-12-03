@@ -3,44 +3,30 @@ from flask import Flask, request, jsonify, render_template
 from urllib.parse import urlparse
 import concurrent.futures
 from bs4 import BeautifulSoup
+import requests
 from utils.html_parser import HTMLParser
 from utils.accessibility_checker import AccessibilityChecker
 from utils.color_validator import ColorValidator
 from utils.custom_rules import CustomRule
 from models import db, AnalysisHistory
 
+# Initialize Flask app
 app = Flask(__name__)
+app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "a11y-checker-secret-key"
 
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-@app.route('/history')
-def view_history():
-    page = request.args.get('page', 1, type=int)
-    per_page = 10
-    
-    # Get paginated history
-    history = AnalysisHistory.query.order_by(
-        AnalysisHistory.created_at.desc()
-    ).paginate(page=page, per_page=per_page)
-    
-    return render_template('history.html', history=history)
+
+# Initialize database
 db.init_app(app)
 
 # Create tables
 with app.app_context():
     db.create_all()
-import os
-import concurrent.futures
-from flask import Flask, render_template, request, jsonify
-from utils.html_parser import HTMLParser
-from utils.accessibility_checker import AccessibilityChecker
-from utils.color_validator import ColorValidator
-from utils.custom_rules import CustomRule
-from urllib.parse import urlparse
 
-app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "a11y-checker-secret-key"
+# Store a11y checker instance globally for custom rules
+global_checker = AccessibilityChecker("<html></html>")
 
 @app.route('/')
 def index():
@@ -49,6 +35,20 @@ def index():
 @app.route('/custom-rules-page')
 def custom_rules_page():
     return render_template('custom_rules.html')
+
+@app.route('/history')
+def view_history():
+    with app.app_context():
+        page = request.args.get('page', 1, type=int)
+        per_page = 10
+        
+        # Get paginated history
+        history = AnalysisHistory.query.order_by(
+            AnalysisHistory.created_at.desc()
+        ).paginate(page=page, per_page=per_page)
+        
+        return render_template('history.html', history=history)
+
 def analyze_single_url(url):
     try:
         # Parse HTML content
@@ -56,12 +56,23 @@ def analyze_single_url(url):
         html_content = parser.get_content()
         
         # Initialize checkers
-        a11y_checker = AccessibilityChecker(html_content)
         color_validator = ColorValidator(html_content)
         
-        # Perform analysis
-        a11y_issues = a11y_checker.analyze()
+        # Use global checker for accessibility checks
+        global_checker.soup = BeautifulSoup(html_content, 'html.parser')
+        a11y_issues = global_checker.analyze()
         color_issues = color_validator.validate()
+        
+        # Store results in database within app context
+        with app.app_context():
+            analysis = AnalysisHistory(
+                url=url,
+                accessibility_issues=a11y_issues,
+                color_issues=color_issues,
+                success=True
+            )
+            db.session.add(analysis)
+            db.session.commit()
         
         return {
             'accessibility': a11y_issues,
@@ -70,6 +81,16 @@ def analyze_single_url(url):
             'success': True
         }
     except Exception as e:
+        # Store error in database within app context
+        with app.app_context():
+            analysis = AnalysisHistory(
+                url=url,
+                success=False,
+                error_message=str(e)
+            )
+            db.session.add(analysis)
+            db.session.commit()
+        
         return {
             'url': url,
             'error': str(e),
@@ -109,8 +130,6 @@ def analyze():
         return render_template('report.html', batch_results=results)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-# Store a11y checker instance globally for custom rules
-global_checker = AccessibilityChecker("<html></html>")
 
 @app.route('/custom-rules', methods=['GET'])
 def list_custom_rules():
@@ -164,50 +183,3 @@ def delete_custom_rule(rule_name):
         return jsonify({'message': 'Custom rule deleted successfully'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 400
-
-# Update analyze_single_url to use global checker
-def analyze_single_url(url):
-    try:
-        # Parse HTML content
-        parser = HTMLParser(url)
-        html_content = parser.get_content()
-        
-        # Initialize checkers
-        color_validator = ColorValidator(html_content)
-        
-        # Use global checker for accessibility checks
-        global_checker.soup = BeautifulSoup(html_content, 'html.parser')
-        a11y_issues = global_checker.analyze()
-        color_issues = color_validator.validate()
-        
-        # Store results in database
-        analysis = AnalysisHistory(
-            url=url,
-            accessibility_issues=a11y_issues,
-            color_issues=color_issues,
-            success=True
-        )
-        db.session.add(analysis)
-        db.session.commit()
-        
-        return {
-            'accessibility': a11y_issues,
-            'colors': color_issues,
-            'url': url,
-            'success': True
-        }
-    except Exception as e:
-        # Store error in database
-        analysis = AnalysisHistory(
-            url=url,
-            success=False,
-            error_message=str(e)
-        )
-        db.session.add(analysis)
-        db.session.commit()
-        
-        return {
-            'url': url,
-            'error': str(e),
-            'success': False
-        }
