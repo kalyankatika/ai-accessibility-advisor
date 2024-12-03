@@ -1,0 +1,22 @@
+/* Additional custom styles */
+.card {
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    border-radius: 8px;
+}
+
+.btn {
+    border-radius: 24px;
+    padding: 0.5rem 1.5rem;
+}
+
+/* FDS color variables */
+:root {
+    --fds-green-primary: #36B727;
+    --fds-green-dark: #044014;
+    --fds-green-light: #4AD539;
+    --fds-neutral: #F9F7F5;
+}
