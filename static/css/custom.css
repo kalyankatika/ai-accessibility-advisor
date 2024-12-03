@@ -13,6 +13,20 @@
     padding: 0.5rem 1.5rem;
 }
 
+/* Accessibility improvements */
+.recommendation-text {
+    color: #333333;
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+
+.text-recommendation {
+    color: #333333 !important;
+    font-weight: 500;
+}
+
 /* FDS color variables */
 :root {
     --fds-green-primary: #36B727;

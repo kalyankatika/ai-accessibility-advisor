@@ -11,25 +11,27 @@
     <div class="container py-5">
         <div class="row">
             <div class="col-12">
-                <h1 class="mb-4">Accessibility Report</h1>
-                <p class="lead">Analysis for: {{ results.url }}</p>
+                <h1 class="mb-4 text-recommendation">Accessibility Report</h1>
+                <p class="lead text-recommendation">Analysis for: {{ results.url }}</p>
                 
                 <!-- Accessibility Issues -->
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h2 class="h5 mb-0">Accessibility Issues</h2>
+                        <h2 class="h5 mb-0 text-recommendation">Accessibility Issues</h2>
                     </div>
                     <div class="card-body">
                         {% if results.accessibility %}
                             {% for issue in results.accessibility %}
                             <div class="alert alert-{{ 'danger' if issue.type == 'error' else 'warning' }}">
-                                <h3 class="h6">{{ issue.category }}</h3>
-                                <p class="mb-1">{{ issue.message }}</p>
-                                <small class="text-muted">Recommendation: {{ issue.recommendation }}</small>
+                                <h3 class="h6 text-recommendation">{{ issue.category }}</h3>
+                                <p class="mb-1 text-recommendation">{{ issue.message }}</p>
+                                <div class="recommendation-text">
+                                    Recommendation: {{ issue.recommendation }}
+                                </div>
                             </div>
                             {% endfor %}
                         {% else %}
-                            <p class="text-success">No accessibility issues found!</p>
+                            <p class="text-success text-recommendation">No accessibility issues found!</p>
                         {% endif %}
                     </div>
                 </div>
@@ -37,19 +39,21 @@
                 <!-- Color and Style Issues -->
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h2 class="h5 mb-0">FDS Color Compliance</h2>
+                        <h2 class="h5 mb-0 text-recommendation">FDS Color Compliance</h2>
                     </div>
                     <div class="card-body">
                         {% if results.colors %}
                             {% for issue in results.colors %}
                             <div class="alert alert-{{ 'danger' if issue.type == 'error' else 'warning' }}">
-                                <h3 class="h6">{{ issue.category }}</h3>
-                                <p class="mb-1">{{ issue.message }}</p>
-                                <small class="text-muted">Recommendation: {{ issue.recommendation }}</small>
+                                <h3 class="h6 text-recommendation">{{ issue.category }}</h3>
+                                <p class="mb-1 text-recommendation">{{ issue.message }}</p>
+                                <div class="recommendation-text">
+                                    Recommendation: {{ issue.recommendation }}
+                                </div>
                             </div>
                             {% endfor %}
                         {% else %}
-                            <p class="text-success">No color compliance issues found!</p>
+                            <p class="text-success text-recommendation">No color compliance issues found!</p>
                         {% endif %}
                     </div>
                 </div>
