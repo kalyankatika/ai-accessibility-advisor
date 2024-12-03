@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+.env
+.venv/
+.DS_Store
+
+# Replit specific
+.replit
+replit.nix
+.upm/
+poetry.lock
+uv.lock
+
+# IDE
+.idea/
+.vscode/
+
+# Environment
+*.env.*
+venv/
+env/
