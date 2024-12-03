@@ -11,19 +11,33 @@
     <div class="container py-5">
         <div class="row">
             <div class="col-12">
-                <h1 class="mb-4 text-recommendation">Accessibility Report</h1>
-                <p class="lead text-recommendation">Analysis for: {{ results.url }}</p>
+                <h1 class="mb-4 text-recommendation">Batch Accessibility Report</h1>
                 
-                <!-- Accessibility Issues -->
+                {% for result in batch_results %}
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h2 class="h5 mb-0 text-recommendation">Accessibility Issues</h2>
+                        <h2 class="h5 mb-0 text-recommendation">
+                            Analysis for: {{ result.url }}
+                            {% if not result.success %}
+                            <span class="badge bg-danger">Failed</span>
+                            {% endif %}
+                        </h2>
                     </div>
+                    
+                    {% if not result.success %}
                     <div class="card-body">
-                        {% if results.accessibility %}
-                            {% for issue in results.accessibility %}
+                        <div class="alert alert-danger">
+                            <p class="mb-0 text-recommendation">Error: {{ result.error }}</p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Accessibility Issues -->
+                    <div class="card-body">
+                        <h3 class="h6 mb-3 text-recommendation">Accessibility Issues</h3>
+                        {% if result.accessibility %}
+                            {% for issue in result.accessibility %}
                             <div class="alert alert-{{ 'danger' if issue.type == 'error' else 'warning' }}">
-                                <h3 class="h6 text-recommendation">{{ issue.category }}</h3>
+                                <h4 class="h6 text-recommendation">{{ issue.category }}</h4>
                                 <p class="mb-1 text-recommendation">{{ issue.message }}</p>
                                 <div class="recommendation-text">
                                     Recommendation: {{ issue.recommendation }}
@@ -33,19 +47,12 @@
                         {% else %}
                             <p class="text-success text-recommendation">No accessibility issues found!</p>
                         {% endif %}
-                    </div>
-                </div>
-                
-                <!-- Color and Style Issues -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h2 class="h5 mb-0 text-recommendation">FDS Color Compliance</h2>
-                    </div>
-                    <div class="card-body">
-                        {% if results.colors %}
-                            {% for issue in results.colors %}
+                        
+                        <h3 class="h6 mb-3 text-recommendation mt-4">FDS Color Compliance</h3>
+                        {% if result.colors %}
+                            {% for issue in result.colors %}
                             <div class="alert alert-{{ 'danger' if issue.type == 'error' else 'warning' }}">
-                                <h3 class="h6 text-recommendation">{{ issue.category }}</h3>
+                                <h4 class="h6 text-recommendation">{{ issue.category }}</h4>
                                 <p class="mb-1 text-recommendation">{{ issue.message }}</p>
                                 <div class="recommendation-text">
                                     Recommendation: {{ issue.recommendation }}
@@ -56,7 +63,9 @@
                             <p class="text-success text-recommendation">No color compliance issues found!</p>
                         {% endif %}
                     </div>
+                    {% endif %}
                 </div>
+                {% endfor %}
                 
                 <div class="text-center">
                     <a href="/" class="btn btn-primary">Check Another URL</a>

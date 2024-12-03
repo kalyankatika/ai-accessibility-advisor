@@ -17,9 +17,11 @@
                         
                         <form action="/analyze" method="POST" id="analyzeForm">
                             <div class="mb-3">
-                                <label for="url" class="form-label">Enter Website URL</label>
-                                <input type="url" class="form-control" id="url" name="url" 
-                                       placeholder="https://example.com" required>
+                                <label for="urls" class="form-label">Enter Website URLs (one per line)</label>
+                                <textarea class="form-control" id="urls" name="urls" 
+                                       placeholder="https://example1.com&#10;https://example2.com" 
+                                       rows="5" required></textarea>
+                                <div class="form-text">Enter up to 10 URLs for batch processing</div>
                             </div>
                             
                             <div class="text-center">
