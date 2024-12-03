@@ -20,3 +20,4 @@ uv.lock
 *.env.*
 venv/
 env/
+.vercel
