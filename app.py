@@ -1,4 +1,36 @@
 import os
+from flask import Flask, request, jsonify, render_template
+from urllib.parse import urlparse
+import concurrent.futures
+from bs4 import BeautifulSoup
+from utils.html_parser import HTMLParser
+from utils.accessibility_checker import AccessibilityChecker
+from utils.color_validator import ColorValidator
+from utils.custom_rules import CustomRule
+from models import db, AnalysisHistory
+
+app = Flask(__name__)
+
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+@app.route('/history')
+def view_history():
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    
+    # Get paginated history
+    history = AnalysisHistory.query.order_by(
+        AnalysisHistory.created_at.desc()
+    ).paginate(page=page, per_page=per_page)
+    
+    return render_template('history.html', history=history)
+db.init_app(app)
+
+# Create tables
+with app.app_context():
+    db.create_all()
+import os
 import concurrent.futures
 from flask import Flask, render_template, request, jsonify
 from utils.html_parser import HTMLParser
@@ -148,6 +180,16 @@ def analyze_single_url(url):
         a11y_issues = global_checker.analyze()
         color_issues = color_validator.validate()
         
+        # Store results in database
+        analysis = AnalysisHistory(
+            url=url,
+            accessibility_issues=a11y_issues,
+            color_issues=color_issues,
+            success=True
+        )
+        db.session.add(analysis)
+        db.session.commit()
+        
         return {
             'accessibility': a11y_issues,
             'colors': color_issues,
@@ -155,6 +197,15 @@ def analyze_single_url(url):
             'success': True
         }
     except Exception as e:
+        # Store error in database
+        analysis = AnalysisHistory(
+            url=url,
+            success=False,
+            error_message=str(e)
+        )
+        db.session.add(analysis)
+        db.session.commit()
+        
         return {
             'url': url,
             'error': str(e),
