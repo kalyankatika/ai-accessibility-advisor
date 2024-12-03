@@ -1,8 +1,10 @@
 from bs4 import BeautifulSoup
+from .custom_rules import CustomRuleManager, CustomRule
 
 class AccessibilityChecker:
     def __init__(self, html_content):
         self.soup = BeautifulSoup(html_content, 'html.parser')
+        self.custom_rule_manager = CustomRuleManager()
         
     def analyze(self):
         issues = []
@@ -23,7 +25,23 @@ class AccessibilityChecker:
         self._check_lists(issues)
         self._check_multimedia(issues)
         
+        # Evaluate custom rules
+        custom_issues = self.custom_rule_manager.evaluate_rules(self.soup)
+        issues.extend(custom_issues)
+        
         return issues
+
+    def add_custom_rule(self, rule: CustomRule):
+        """Add a custom accessibility rule."""
+        self.custom_rule_manager.add_rule(rule)
+        
+    def remove_custom_rule(self, rule_name: str):
+        """Remove a custom accessibility rule."""
+        self.custom_rule_manager.remove_rule(rule_name)
+        
+    def get_custom_rule(self, rule_name: str) -> CustomRule:
+        """Get a custom accessibility rule by name."""
+        return self.custom_rule_manager.get_rule(rule_name)
     
     def _check_images(self, issues):
         images = self.soup.find_all('img')

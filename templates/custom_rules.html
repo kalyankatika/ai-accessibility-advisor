@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Accessibility Rules</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="/static/css/custom.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">Custom Accessibility Rules</h1>
+                
+                <!-- Create Rule Form -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h2 class="h5 mb-3">Create New Rule</h2>
+                        <form id="createRuleForm">
+                            <div class="mb-3">
+                                <label for="ruleName" class="form-label">Rule Name</label>
+                                <input type="text" class="form-control" id="ruleName" name="name" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="2" required></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="selector" class="form-label">CSS Selector</label>
+                                <input type="text" class="form-control" id="selector" name="selector" required>
+                                <div class="form-text">Example: img[alt=""], button:not([aria-label])</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="condition" class="form-label">Condition</label>
+                                <select class="form-control" id="condition" name="condition" required>
+                                    <option value="exists">Element exists</option>
+                                    <option value="not_exists">Element does not exist</option>
+                                    <option value="has_attr:aria-label">Has aria-label attribute</option>
+                                    <option value="contains_text:required">Contains text "required"</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="message" class="form-label">Error Message</label>
+                                <input type="text" class="form-control" id="message" name="message" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="recommendation" class="form-label">Recommendation</label>
+                                <textarea class="form-control" id="recommendation" name="recommendation" rows="2" required></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="severity" class="form-label">Severity</label>
+                                <select class="form-control" id="severity" name="severity" required>
+                                    <option value="warning">Warning</option>
+                                    <option value="error">Error</option>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Create Rule</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Existing Rules -->
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="h5 mb-3">Existing Rules</h2>
+                        <div id="rulesList" class="list-group">
+                            <!-- Rules will be populated here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="/" class="btn btn-secondary">Back to Checker</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/custom_rules.js"></script>
+</body>
+</html>
