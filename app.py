@@ -12,11 +12,23 @@ from models import db, AnalysisHistory
 
 # Initialize Flask app
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "a11y-checker-secret-key"
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "default-secret-key-change-in-production")
 
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Configure PostgreSQL connection using individual variables if available
+if not app.config['SQLALCHEMY_DATABASE_URI']:
+    db_params = {
+        'host': os.getenv('PGHOST'),
+        'port': os.getenv('PGPORT'),
+        'database': os.getenv('PGDATABASE'),
+        'user': os.getenv('PGUSER'),
+        'password': os.getenv('PGPASSWORD')
+    }
+    if all(db_params.values()):
+        app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{db_params['user']}:{db_params['password']}@{db_params['host']}:{db_params['port']}/{db_params['database']}"
 
 # Initialize database
 db.init_app(app)

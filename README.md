@@ -12,6 +12,40 @@ An enterprise-grade web accessibility testing platform that uses AI to evaluate 
 - Custom accessibility rule creation (coming soon)
 - Historical analysis tracking (coming soon)
 
+## Deployment
+
+### Vercel Deployment
+
+1. Install Vercel CLI:
+```bash
+npm i -g vercel
+```
+
+2. Login to Vercel:
+```bash
+vercel login
+```
+
+3. Configure the following environment variables in your Vercel project settings:
+   - `FLASK_SECRET_KEY`: Your Flask secret key
+   - `DATABASE_URL`: PostgreSQL database URL (if using a single connection URL)
+   - Or individual PostgreSQL connection variables:
+     - `PGHOST`: Database host
+     - `PGPORT`: Database port
+     - `PGDATABASE`: Database name
+     - `PGUSER`: Database user
+     - `PGPASSWORD`: Database password
+
+4. Deploy to Vercel:
+```bash
+vercel
+```
+
+5. For production deployment:
+```bash
+vercel --prod
+```
+
 ## Installation
 
 ### Prerequisites
