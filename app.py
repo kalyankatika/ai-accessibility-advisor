@@ -1,22 +1,54 @@
 import os
-import concurrent.futures
 from flask import Flask, render_template, request, jsonify
+from bs4 import BeautifulSoup
+import concurrent.futures
+from urllib.parse import urlparse
+
 from utils.html_parser import HTMLParser
 from utils.accessibility_checker import AccessibilityChecker
 from utils.color_validator import ColorValidator
 from utils.custom_rules import CustomRule
-from urllib.parse import urlparse
+from models import db, AnalysisHistory
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "a11y-checker-secret-key"
+
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
+
+# Initialize database
+with app.app_context():
+    db.create_all()
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
+@app.route('/history')
+def history():
+    analyses = AnalysisHistory.query.order_by(AnalysisHistory.timestamp.desc()).all()
+    return render_template('history.html', history=analyses)
+
+@app.route('/history/<int:analysis_id>')
+def view_analysis(analysis_id):
+    analysis = AnalysisHistory.query.get_or_404(analysis_id)
+    return render_template('report.html', batch_results=[{
+        'url': analysis.url,
+        'success': analysis.success,
+        'error': analysis.error_message if not analysis.success else None,
+        'accessibility': analysis.accessibility_issues,
+        'colors': analysis.color_issues
+    }])
+
 @app.route('/custom-rules-page')
 def custom_rules_page():
     return render_template('custom_rules.html')
+
+# Store a11y checker instance globally for custom rules
+global_checker = AccessibilityChecker("<html></html>")
+
 def analyze_single_url(url):
     try:
         # Parse HTML content
@@ -24,12 +56,22 @@ def analyze_single_url(url):
         html_content = parser.get_content()
         
         # Initialize checkers
-        a11y_checker = AccessibilityChecker(html_content)
         color_validator = ColorValidator(html_content)
         
-        # Perform analysis
-        a11y_issues = a11y_checker.analyze()
+        # Use global checker for accessibility checks
+        global_checker.soup = BeautifulSoup(html_content, 'html.parser')
+        a11y_issues = global_checker.analyze()
         color_issues = color_validator.validate()
+        
+        # Store analysis in database
+        analysis = AnalysisHistory(
+            url=url,
+            accessibility_issues=a11y_issues,
+            color_issues=color_issues,
+            success=True
+        )
+        db.session.add(analysis)
+        db.session.commit()
         
         return {
             'accessibility': a11y_issues,
@@ -38,6 +80,15 @@ def analyze_single_url(url):
             'success': True
         }
     except Exception as e:
+        # Store failed analysis
+        analysis = AnalysisHistory(
+            url=url,
+            success=False,
+            error_message=str(e)
+        )
+        db.session.add(analysis)
+        db.session.commit()
+        
         return {
             'url': url,
             'error': str(e),
@@ -77,8 +128,6 @@ def analyze():
         return render_template('report.html', batch_results=results)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-# Store a11y checker instance globally for custom rules
-global_checker = AccessibilityChecker("<html></html>")
 
 @app.route('/custom-rules', methods=['GET'])
 def list_custom_rules():
@@ -132,31 +181,3 @@ def delete_custom_rule(rule_name):
         return jsonify({'message': 'Custom rule deleted successfully'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 400
-
-# Update analyze_single_url to use global checker
-def analyze_single_url(url):
-    try:
-        # Parse HTML content
-        parser = HTMLParser(url)
-        html_content = parser.get_content()
-        
-        # Initialize checkers
-        color_validator = ColorValidator(html_content)
-        
-        # Use global checker for accessibility checks
-        global_checker.soup = BeautifulSoup(html_content, 'html.parser')
-        a11y_issues = global_checker.analyze()
-        color_issues = color_validator.validate()
-        
-        return {
-            'accessibility': a11y_issues,
-            'colors': color_issues,
-            'url': url,
-            'success': True
-        }
-    except Exception as e:
-        return {
-            'url': url,
-            'error': str(e),
-            'success': False
-        }
