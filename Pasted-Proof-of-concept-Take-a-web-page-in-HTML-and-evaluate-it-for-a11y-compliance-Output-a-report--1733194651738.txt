@@ -1,0 +1,41 @@
+Proof of concept:
+
+Take a web page (in HTML), and evaluate it for a11y compliance
+Output a 'report' with issues and recommendations on a11y fixes
+How might an AI tool like this have benefits over the CAT tool? Does it adapt more quickly to changes to standards? Provide a more thorough analysis? 
+What other "AI Agents" have you been thinking about? 
+
+
+Set of instructions/rules for vetting web pages against FDS design specifications. Here are the key guidelines:
+
+ 
+
+Core Color Palette:
+All green elements on the page must align with the core FDS standards for color.
+Use the specified green shades: #36B727, #044014, and #4AD539.
+Background Color:
+Over 50% of the page must have a neutral (#F9F7F5) background.
+White backgrounds are acceptable in some page sections.
+Avoid using shades of grey for backgrounds.
+Container Styling:
+Major content containers (e.g., tiles) must have a corner radius of either 12px or 24px.
+Follow FDS standards for shape when applying container styles.
+Button Styling:
+All buttons on the page must adhere to FDS visual standards for buttons.
+Example: Use rounded corners and green fill color for primary action buttons.
+Typography:
+Ensure consistent use of font styles across different elements (headers, body text, buttons).
+Verify that text is legible against its background.
+Layout:
+Check that the layout is clean and organized, similar to the examples shown.
+Ensure proper spacing between elements for readability.
+Information Display:
+For account balances, use a large, bold font for the main figure.
+Display gain/loss information in a smaller font below the main balance.
+Navigation:
+Include clear navigation elements, such as the "Accounts" header with a back arrow.
+Interactive Elements:
+Provide obvious calls-to-action, like "Log In" and "Create an account" buttons.
+Consistency:
+Ensure all pages maintain a consistent look and feel matching these examples.
+When reviewing, compare each page against these guidelines to verify compliance with the specified visual standards.
